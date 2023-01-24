@@ -14,8 +14,8 @@ def equation(x, y):
 def update_screen():
     for x in range(W):
         for y in range(H):
-            t_x = (x - x_offset) * xm
-            t_y = -(y - y_offset) * ym
+            t_x = (x - x_offset) * xm  # transformed x
+            t_y = -(y - y_offset) * ym  # transformed y
             if abs(equation(t_x, t_y)) < treshold:
                 screen.set_at((x, y), (0, 0, 0))
             elif abs(int((x - x_offset))) == 0 or abs(int((y - y_offset))) == 0:
@@ -31,8 +31,8 @@ def update_screen():
 W = 500
 H = 500
 treshold = 0.2
-xm = 0.1
-ym = 0.1
+xm = 0.1  # x multipiler
+ym = 0.1  # y multiplier
 x_offset = W // 2
 y_offset = H // 2
 MAX_ZOOM = 0.01
