@@ -53,9 +53,7 @@ def update_screen():
             y_from = H + delta_y
             y_to = H
 
-        temp = pg.Surface((W, H))
-        temp.blit(screen, (delta_x, delta_y))
-        screen.blit(temp, (0, 0))
+        screen.blit(screen, (delta_x, delta_y))
         update_section(x_from, 0, x_to, H)
         if delta_x < 0:
             update_section(0, y_from, W + delta_x, y_to)
