@@ -1,43 +1,92 @@
 import pygame as pg
 import sys
-import math
+from math import *
 pg.init()
 
 
 def equation(x, y):
     try:
-        return x * x - y  # this is the equation that will be displayed
+        # this is the equation that will be plotted
+        return sin(cos(tan(x * y))) - sin(cos(tan(x))) - sin(cos(tan(y)))
     except Exception:
-        return 100000000000000  # this is ideally always over the treshold
+        return 1
+
+
+def update_section(from_x, from_y, to_x, to_y):
+    for x in range(from_x, to_x, 1):
+        for y in range(from_y, to_y, 1):
+            t_x = (x - x_offset) * xm  # transformed x
+            t_y = -(y - y_offset) * ym  # transformed y
+            res = abs(equation(t_x, t_y))
+            if res > treshold:
+                res = 1
+            else:
+                res *= 1 / treshold
+            screen.set_at((x, y), (255 * res, 255 * res, 255 * res))
+
+            if abs(int((x - x_offset))) == 0 or abs(int((y - y_offset))) == 0:
+                screen.set_at((x, y), (0, 0, 0))
+            if abs(t_x - int(t_x)) < 0.1 and abs(t_y - int(t_y)) < 0.1:
+                screen.set_at((x, y), (0, 0, 0))
 
 
 def update_screen():
-    for x in range(W):
-        for y in range(H):
-            t_x = (x - x_offset) * xm  # transformed x
-            t_y = -(y - y_offset) * ym  # transformed y
-            if abs(equation(t_x, t_y)) < treshold:
-                screen.set_at((x, y), (0, 0, 0))
-            elif abs(int((x - x_offset))) == 0 or abs(int((y - y_offset))) == 0:
-                screen.set_at((x, y), (0, 0, 0))
-            elif abs(t_x - int(t_x)) < 0.1 and abs(t_y - int(t_y)) < 0.1:
-                screen.set_at((x, y), (0, 0, 0))
-            else:
-                screen.set_at((x, y), (255, 255, 255))
+    global prev_x_offset, prev_y_offset, prev_treshold, prev_xm, prev_ym
+
+    if xm != prev_xm or ym != prev_ym or treshold != prev_treshold:
+        update_section(0, 0, W, H)
+    else:
+        delta_x = x_offset - prev_x_offset
+        delta_y = y_offset - prev_y_offset
+
+        if delta_x > 0:
+            x_from = 0
+            x_to = delta_x
+        else:
+            x_from = W + delta_x
+            x_to = W
+
+        if delta_y > 0:
+            y_from = 0
+            y_to = delta_y
+        else:
+            y_from = H + delta_y
+            y_to = H
+
+        temp = pg.Surface((W, H))
+        temp.blit(screen, (delta_x, delta_y))
+        screen.blit(temp, (0, 0))
+        update_section(x_from, 0, x_to, H)
+        if delta_x < 0:
+            update_section(0, y_from, W + delta_x, y_to)
+        else:
+            update_section(delta_x, y_from, W, y_to)
+
+    prev_x_offset = x_offset
+    prev_y_offset = y_offset
+    prev_treshold = treshold
+    prev_xm = xm
+    prev_ym = ym
 
     pg.display.update()
 
-
 W = 500
 H = 500
-treshold = 0.2
-xm = 0.1  # x multipiler
-ym = 0.1  # y multiplier
+treshold = 1.0
+xm = 0.05  # x multipiler
+ym = 0.05  # y multiplier
 x_offset = W // 2
 y_offset = H // 2
 MAX_ZOOM = 0.01
 screen = pg.display.set_mode((W, H))
 pg.display.set_caption("BER (Bad Equation Renderer)")
+
+prev_xm = xm
+prev_ym = ym
+prev_x_offset = -x_offset
+prev_y_offset = -y_offset
+prev_treshold = treshold
+
 update_screen()
 
 while True:
@@ -47,10 +96,20 @@ while True:
             exit()
         elif e.type == pg.KEYDOWN:
             if e.key == pg.K_KP_PLUS:
-                treshold += 0.1
+                if treshold < 0.10005:
+                    treshold += 0.01
+                else:
+                    treshold += 0.1
+                if treshold > 1:
+                    treshold = 1
                 update_screen()
             elif e.key == pg.K_KP_MINUS:
-                treshold -= 0.1
+                if treshold < 0.10005:
+                    treshold -= 0.01
+                else:
+                    treshold -= 0.1
+                if treshold < 0.01:
+                    treshold = 0.01
                 update_screen()
             elif e.key == pg.K_l:
                 xm -= 0.06 * xm
@@ -89,5 +148,8 @@ while True:
             elif xm < MAX_ZOOM:
                 xm = MAX_ZOOM
                 ym = MAX_ZOOM
-            print(treshold, xm, ym)
+
+            m_x, m_y = pg.mouse.get_pos()
+            x_offset -= int(round(((m_x - x_offset) * delta_x) / xm))
+            y_offset -= int(round(((m_y - y_offset) * delta_y) / ym))
             update_screen()
