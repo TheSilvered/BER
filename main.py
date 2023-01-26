@@ -13,8 +13,8 @@ def equation(x, y):
 
 
 def update_section(from_x, from_y, to_x, to_y):
-    for x in range(from_x, to_x, 1):
-        for y in range(from_y, to_y, 1):
+    for x in range(from_x, to_x):
+        for y in range(from_y, to_y):
             t_x = (x - x_offset) * xm  # transformed x
             t_y = -(y - y_offset) * ym  # transformed y
             res = abs(equation(t_x, t_y))
@@ -110,26 +110,45 @@ while True:
                     treshold = 0.01
                 update_screen()
             elif e.key == pg.K_l:
-                xm -= 0.06 * xm
+                delta_x = 0.06 * xm
+                xm -= delta_x
                 if xm < MAX_ZOOM:
                     xm = MAX_ZOOM
+                    delta_x = prev_xm - MAX_ZOOM
+
+                x_offset -= int(round((((W / 2) - x_offset) * delta_x) / xm))
+
                 update_screen()
             elif e.key == pg.K_j:
-                xm += 0.06 * xm
+                delta_x = -0.06 * xm
+                xm -= delta_x
+
+                x_offset -= int(round((((W / 2) - x_offset) * delta_x) / xm))
+
                 update_screen()
             elif e.key == pg.K_i:
-                ym -= 0.06 * ym
+                delta_y = 0.06 * ym
+                ym -= delta_y
                 if ym < MAX_ZOOM:
                     ym = MAX_ZOOM
+                    delta_y = prev_ym - MAX_ZOOM
+
+                y_offset -= int(round((((H / 2) - y_offset) * delta_y) / ym))
+
                 update_screen()
             elif e.key == pg.K_k:
-                ym += 0.06 * ym
+                delta_y = -0.06 * ym
+                ym -= delta_y
+
+                y_offset -= int(round((((H / 2) - y_offset) * delta_y) / ym))
+
                 update_screen()
 
         elif e.type == pg.MOUSEMOTION and e.buttons[0]:
             x_offset += e.rel[0]
             y_offset += e.rel[1]
             update_screen()
+
         elif e.type == pg.MOUSEWHEEL:
             delta_x = e.y * 0.03 * xm
             delta_y = e.y * 0.03 * ym
@@ -140,12 +159,18 @@ while True:
                 if xm < ym and xm < MAX_ZOOM:
                     ym += delta_y
                     xm = MAX_ZOOM
+                    delta_x = prev_xm - MAX_ZOOM
+                    delta_y = 0
                 elif ym < MAX_ZOOM:
                     xm += delta_x
                     ym = MAX_ZOOM
+                    delta_x = 0
+                    delta_y = prev_ym - MAX_ZOOM
             elif xm < MAX_ZOOM:
                 xm = MAX_ZOOM
                 ym = MAX_ZOOM
+                delta_x = prev_xm - MAX_ZOOM
+                delta_y = prev_ym - MAX_ZOOM
 
             m_x, m_y = pg.mouse.get_pos()
             x_offset -= int(round(((m_x - x_offset) * delta_x) / xm))
