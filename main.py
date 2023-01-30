@@ -5,11 +5,7 @@ pg.init()
 
 
 def equation(x, y):
-    try:
-        # this is the equation that will be plotted
-        return sin(cos(tan(x * y))) - sin(cos(tan(x))) - sin(cos(tan(y)))
-    except Exception:
-        return 1
+    return sin(cos(tan(x * y))) - sin(cos(tan(x))) - sin(cos(tan(y)))
 
 
 def update_section(from_x, from_y, to_x, to_y):
@@ -17,7 +13,10 @@ def update_section(from_x, from_y, to_x, to_y):
         for y in range(from_y, to_y):
             t_x = (x - x_offset) * xm  # transformed x
             t_y = -(y - y_offset) * ym  # transformed y
-            res = abs(equation(t_x, t_y))
+            try:
+                res = abs(equation(t_x, t_y))
+            except Exception:
+                res = treshold / 2
             if res > treshold:
                 res = 1
             else:
